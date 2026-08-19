@@ -46,100 +46,134 @@ function Home() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Available Pets</h1>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+      
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Find your new companion</h1>
+        <p className="text-gray-500">Browse pets available for adoption near you</p>
+      </div>
 
       {/* Filters */}
       <form
         onSubmit={handleFilter}
-        className="bg-gray-50 border rounded-xl p-4 mb-8 flex flex-wrap gap-3 items-center"
+        className="bg-white border border-gray-200 rounded-2xl p-5 mb-10 shadow-sm"
       >
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">All Categories</option>
-          <option value="Dog">Dog</option>
-          <option value="Cat">Cat</option>
-          <option value="Bird">Bird</option>
-          <option value="Rabbit">Rabbit</option>
-          <option value="Other">Other</option>
-        </select>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          >
+            <option value="">All Categories</option>
+            <option value="Dog">Dog</option>
+            <option value="Cat">Cat</option>
+            <option value="Bird">Bird</option>
+            <option value="Rabbit">Rabbit</option>
+            <option value="Other">Other</option>
+          </select>
 
-        <input
-          type="text"
-          placeholder="Search by breed..."
-          value={breed}
-          onChange={(e) => setBreed(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+          <input
+            type="text"
+            placeholder="Breed (e.g. Labrador)"
+            value={breed}
+            onChange={(e) => setBreed(e.target.value)}
+            className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          />
 
-        <input
-          type="text"
-          placeholder="Search by location..."
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+          <input
+            type="text"
+            placeholder="Location (e.g. Bengaluru)"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          />
 
-        <button
-          type="submit"
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition"
-        >
-          Apply Filters
-        </button>
-
-        <button
-          type="button"
-          onClick={handleClear}
-          className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg text-sm transition"
-        >
-          Clear
-        </button>
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition"
+            >
+              Search
+            </button>
+            <button
+              type="button"
+              onClick={handleClear}
+              className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm font-medium transition"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
       </form>
 
       {/* Results */}
       {loading ? (
-        <p className="text-gray-500">Loading pets...</p>
+        <div className="text-center py-20 text-gray-400">Loading pets...</div>
       ) : error ? (
-        <p className="text-red-500">{error}</p>
+        <div className="text-center py-20 text-red-500">{error}</div>
       ) : pets.length === 0 ? (
-        <p className="text-gray-500">No pets found matching your filters.</p>
+        <div className="text-center py-20">
+          <p className="text-gray-400 text-lg">No pets found</p>
+          <p className="text-gray-400 text-sm mt-1">Try changing your filters</p>
+        </div>
       ) : (
         <>
-          <p className="mb-4 text-gray-600">
-            Showing <span className="font-semibold">{pets.length}</span> pet(s)
+          <p className="text-sm text-gray-500 mb-6">
+            {pets.length} pet{pets.length !== 1 ? 's' : ''} available
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {pets.map((pet) => (
-              <div
+              <Link
                 key={pet._id}
-                className="bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition"
+                to={`/pets/${pet._id}`}
+                className="group bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg hover:border-gray-300 transition-all duration-200"
               >
+                {/* Pet Image */}
+<div className="h-48 bg-gray-100 overflow-hidden">
+  {pet.images && pet.images.length > 0 ? (
+    <img
+      src={pet.images[0]}
+      alt={pet.name}
+      className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+    />
+  ) : (
+    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50">
+      <span className="text-5xl opacity-60">
+        {pet.category === 'Dog' ? '🐕' : 
+         pet.category === 'Cat' ? '🐈' : 
+         pet.category === 'Bird' ? '🐦' : 
+         pet.category === 'Rabbit' ? '🐇' : '🐾'}
+      </span>
+    </div>
+  )}
+</div>
+
                 <div className="p-5">
-                  <h3 className="text-lg font-semibold mb-2">{pet.name}</h3>
-                  <div className="text-sm text-gray-600 space-y-1">
-                    <p><span className="font-medium">Breed:</span> {pet.breed}</p>
-                    <p><span className="font-medium">Age:</span> {pet.age} years</p>
-                    <p><span className="font-medium">Category:</span> {pet.category}</p>
-                    <p><span className="font-medium">Location:</span> {pet.location}</p>
-                    <p>
-                      <span className="font-medium">Status:</span>{' '}
-                      <span className={`${pet.status === 'Available' ? 'text-green-600' : 'text-orange-600'}`}>
-                        {pet.status}
-                      </span>
-                    </p>
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-lg font-semibold text-gray-900 group-hover:text-indigo-600 transition">
+                      {pet.name}
+                    </h3>
+                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
+                      pet.status === 'Available' 
+                        ? 'bg-green-50 text-green-700' 
+                        : 'bg-orange-50 text-orange-700'
+                    }`}>
+                      {pet.status}
+                    </span>
                   </div>
 
-                  <Link to={`/pets/${pet._id}`}>
-                    <button className="mt-4 w-full bg-gray-900 hover:bg-gray-800 text-white py-2 rounded-lg text-sm transition">
-                      View Details
-                    </button>
-                  </Link>
+                  <p className="text-sm text-gray-500 mb-3">{pet.breed} • {pet.age} years</p>
+
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-400">{pet.location}</span>
+                    <span className="text-indigo-600 font-medium group-hover:underline">
+                      View →
+                    </span>
+                  </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </>

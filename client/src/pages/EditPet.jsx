@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import API from '../services/api';
 
-function AddPet() {
+function EditPet() {
+  const { id } = useParams();
   const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     name: '',
     breed: '',
@@ -12,19 +14,49 @@ function AddPet() {
     category: 'Dog',
     description: '',
     location: '',
+    status: 'Available',
   });
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
-      alert('Please login first to add a pet');
       navigate('/login');
+      return;
     }
-  }, [navigate]);
+
+    const fetchPet = async () => {
+      try {
+        const res = await API.get(`/pets/${id}`);
+        const pet = res.data;
+
+        setFormData({
+          name: pet.name || '',
+          breed: pet.breed || '',
+          age: pet.age || '',
+          gender: pet.gender || 'Unknown',
+          category: pet.category || 'Dog',
+          description: pet.description || '',
+          location: pet.location || '',
+          status: pet.status || 'Available',
+        });
+
+        if (pet.images && pet.images.length > 0) {
+          setPreview(pet.images[0]);
+        }
+      } catch (err) {
+        setError('Failed to load pet details');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPet();
+  }, [id, navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -40,47 +72,46 @@ function AddPet() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setSaving(true);
     setError('');
 
     try {
       const token = localStorage.getItem('token');
-
-      // We must use FormData when uploading files
       const data = new FormData();
-      data.append('name', formData.name);
-      data.append('breed', formData.breed);
-      data.append('age', formData.age);
-      data.append('gender', formData.gender);
-      data.append('category', formData.category);
-      data.append('description', formData.description);
-      data.append('location', formData.location);
+
+      Object.keys(formData).forEach((key) => {
+        data.append(key, formData[key]);
+      });
 
       if (image) {
         data.append('image', image);
       }
 
-      await API.post('/pets', data, {
+      await API.put(`/pets/${id}`, data, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
         },
       });
 
-      alert('Pet added successfully!');
-      navigate('/');
+      alert('Pet updated successfully!');
+      navigate(`/pets/${id}`);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to add pet');
+      setError(err.response?.data?.message || 'Failed to update pet');
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
+
+  if (loading) {
+    return <div className="text-center py-20 text-gray-400">Loading...</div>;
+  }
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-lg bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
         <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-          List a Pet for Adoption
+          Edit Pet Details
         </h1>
 
         {error && (
@@ -90,25 +121,18 @@ function AddPet() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          
-          {/* Image Upload */}
+          {/* Image */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Pet Photo
             </label>
-            
-            {preview ? (
-              <div className="mb-3">
-                <img
-                  src={preview}
-                  alt="Preview"
-                  className="w-full h-48 object-cover rounded-xl border"
-                />
-              </div>
-            ) : (
-              <div className="w-full h-48 bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl flex items-center justify-center text-gray-400 mb-3">
-                No image selected
-              </div>
+
+            {preview && (
+              <img
+                src={preview}
+                alt="Preview"
+                className="w-full h-48 object-cover rounded-xl border mb-3"
+              />
             )}
 
             <input
@@ -119,7 +143,6 @@ function AddPet() {
             />
           </div>
 
-          {/* Other fields */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Pet Name</label>
             <input
@@ -202,6 +225,20 @@ function AddPet() {
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="Available">Available</option>
+              <option value="Pending">Pending</option>
+              <option value="Adopted">Adopted</option>
+            </select>
+          </div>
+
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
             <textarea
               name="description"
@@ -213,17 +250,26 @@ function AddPet() {
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 rounded-xl transition disabled:opacity-50"
-          >
-            {loading ? 'Uploading...' : 'List Pet'}
-          </button>
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => navigate(`/pets/${id}`)}
+              className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 rounded-xl transition"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 rounded-xl transition disabled:opacity-50"
+            >
+              {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
         </form>
       </div>
     </div>
   );
 }
 
-export default AddPet;
+export default EditPet;

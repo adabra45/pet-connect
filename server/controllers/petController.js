@@ -3,7 +3,7 @@ const Pet = require('../models/Pet');
 // CREATE a new pet
 const createPet = async (req, res) => {
   try {
-    const { name, breed, age, gender, category, description, location, images } = req.body;
+    const { name, breed, age, gender, category, description, location } = req.body;
 
     const pet = await Pet.create({
       name,
@@ -13,8 +13,8 @@ const createPet = async (req, res) => {
       category,
       description,
       location,
-      images: images || [],
-      listedBy: req.user.id, // We will get this from authentication middleware later
+      images: req.file ? [req.file.path] : [],
+      listedBy: req.user.id,
     });
 
     res.status(201).json({
