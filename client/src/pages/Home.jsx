@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../services/api';
+import Skeleton from '../components/Skeleton';
 
 function Home() {
   const [pets, setPets] = useState([]);
@@ -109,13 +110,33 @@ function Home() {
 
       {/* Results */}
       {loading ? (
-        <div className="text-center py-20 text-gray-400">Loading pets...</div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((item) => (
+            <div key={item} className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+              <Skeleton className="h-48 w-full rounded-none" />
+              <div className="p-5 space-y-3">
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-4 w-2/3" />
+                <Skeleton className="h-9 w-full mt-2" />
+              </div>
+            </div>
+          ))}
+        </div>
       ) : error ? (
         <div className="text-center py-20 text-red-500">{error}</div>
       ) : pets.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-gray-400 text-lg">No pets found</p>
-          <p className="text-gray-400 text-sm mt-1">Try changing your filters</p>
+        <div className="text-center py-20 bg-white border border-gray-200 rounded-2xl">
+          <div className="text-5xl mb-4">🐾</div>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">No pets found</h3>
+          <p className="text-gray-500 text-sm mb-6">
+            Try adjusting your filters or check back later.
+          </p>
+          <button
+            onClick={handleClear}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition">
+            Clear Filters
+          </button>
         </div>
       ) : (
         <>

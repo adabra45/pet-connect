@@ -93,12 +93,15 @@ function Profile() {
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
       {myPets.length === 0 ? (
-        <div className="bg-white border border-gray-200 rounded-2xl p-10 text-center">
-          <p className="text-gray-400 mb-4">You haven’t listed any pets yet.</p>
+        <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center">
+          <div className="text-5xl mb-4">🏠</div>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">No pets listed yet</h3>
+          <p className="text-gray-500 text-sm mb-6">
+            Start by listing a pet for adoption.
+          </p>
           <Link
             to="/add-pet"
-            className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition"
-          >
+            className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition">
             List your first pet
           </Link>
         </div>

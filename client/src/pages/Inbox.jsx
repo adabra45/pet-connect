@@ -46,9 +46,10 @@ function Inbox() {
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
       {conversations.length === 0 ? (
-        <div className="bg-white border border-gray-200 rounded-2xl p-10 text-center">
-          <p className="text-gray-400">No conversations yet.</p>
-          <p className="text-gray-400 text-sm mt-1">
+        <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center">
+          <div className="text-5xl mb-4">💬</div>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">No conversations yet</h3>
+          <p className="text-gray-500 text-sm">
             When someone messages you about a pet, it will appear here.
           </p>
         </div>

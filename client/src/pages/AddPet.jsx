@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import API from '../services/api';
 
 function AddPet() {
@@ -15,19 +16,22 @@ function AddPet() {
   });
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
-      alert('Please login first to add a pet');
+      toast.error('Please login first to add a pet');
       navigate('/login');
     }
   }, [navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (errors[e.target.name]) {
+      setErrors({ ...errors, [e.target.name]: '' });
+    }
   };
 
   const handleImageChange = (e) => {
@@ -38,16 +42,33 @@ function AddPet() {
     }
   };
 
+  const validate = () => {
+    const newErrors = {};
+
+    if (!formData.name.trim()) newErrors.name = 'Pet name is required';
+    if (!formData.breed.trim()) newErrors.breed = 'Breed is required';
+    if (!formData.age || formData.age < 0) newErrors.age = 'Please enter a valid age';
+    if (!formData.location.trim()) newErrors.location = 'Location is required';
+    if (!formData.description.trim()) newErrors.description = 'Description is required';
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!validate()) {
+      toast.error('Please fix the errors in the form');
+      return;
+    }
+
     setLoading(true);
-    setError('');
 
     try {
       const token = localStorage.getItem('token');
-
-      // We must use FormData when uploading files
       const data = new FormData();
+
       data.append('name', formData.name);
       data.append('breed', formData.breed);
       data.append('age', formData.age);
@@ -67,10 +88,11 @@ function AddPet() {
         },
       });
 
-      alert('Pet added successfully!');
+      toast.success('Pet listed successfully!');
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to add pet');
+      const message = err.response?.data?.message || 'Failed to add pet';
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -83,28 +105,19 @@ function AddPet() {
           List a Pet for Adoption
         </h1>
 
-        {error && (
-          <div className="bg-red-50 text-red-600 p-3 rounded-xl mb-5 text-sm">
-            {error}
-          </div>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-5">
-          
           {/* Image Upload */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Pet Photo
             </label>
-            
+
             {preview ? (
-              <div className="mb-3">
-                <img
-                  src={preview}
-                  alt="Preview"
-                  className="w-full h-48 object-cover rounded-xl border"
-                />
-              </div>
+              <img
+                src={preview}
+                alt="Preview"
+                className="w-full h-48 object-cover rounded-xl border mb-3"
+              />
             ) : (
               <div className="w-full h-48 bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl flex items-center justify-center text-gray-400 mb-3">
                 No image selected
@@ -119,7 +132,7 @@ function AddPet() {
             />
           </div>
 
-          {/* Other fields */}
+          {/* Pet Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Pet Name</label>
             <input
@@ -127,11 +140,14 @@ function AddPet() {
               name="name"
               value={formData.name}
               onChange={handleChange}
-              required
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className={`w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                errors.name ? 'border-red-400' : 'border-gray-200'
+              }`}
             />
+            {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
           </div>
 
+          {/* Breed */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Breed</label>
             <input
@@ -139,11 +155,14 @@ function AddPet() {
               name="breed"
               value={formData.breed}
               onChange={handleChange}
-              required
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className={`w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                errors.breed ? 'border-red-400' : 'border-gray-200'
+              }`}
             />
+            {errors.breed && <p className="text-red-500 text-xs mt-1">{errors.breed}</p>}
           </div>
 
+          {/* Age */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Age (years)</label>
             <input
@@ -151,12 +170,15 @@ function AddPet() {
               name="age"
               value={formData.age}
               onChange={handleChange}
-              required
               min="0"
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className={`w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                errors.age ? 'border-red-400' : 'border-gray-200'
+              }`}
             />
+            {errors.age && <p className="text-red-500 text-xs mt-1">{errors.age}</p>}
           </div>
 
+          {/* Gender & Category */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
@@ -189,6 +211,7 @@ function AddPet() {
             </div>
           </div>
 
+          {/* Location */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
             <input
@@ -196,21 +219,28 @@ function AddPet() {
               name="location"
               value={formData.location}
               onChange={handleChange}
-              required
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className={`w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                errors.location ? 'border-red-400' : 'border-gray-200'
+              }`}
             />
+            {errors.location && <p className="text-red-500 text-xs mt-1">{errors.location}</p>}
           </div>
 
+          {/* Description */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
             <textarea
               name="description"
               value={formData.description}
               onChange={handleChange}
-              required
               rows="4"
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className={`w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                errors.description ? 'border-red-400' : 'border-gray-200'
+              }`}
             />
+            {errors.description && (
+              <p className="text-red-500 text-xs mt-1">{errors.description}</p>
+            )}
           </div>
 
           <button
@@ -218,7 +248,7 @@ function AddPet() {
             disabled={loading}
             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 rounded-xl transition disabled:opacity-50"
           >
-            {loading ? 'Uploading...' : 'List Pet'}
+            {loading ? 'Listing Pet...' : 'List Pet'}
           </button>
         </form>
       </div>

@@ -10,10 +10,12 @@ import Profile from './pages/Profile';
 import EditProfile from './pages/EditProfile';
 import Chat from './pages/Chat';
 import Inbox from './pages/Inbox';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   return (
     <BrowserRouter>
+      <Toaster position="top-right" reverseOrder={false} />
       <Navbar />
       <div style={{ padding: '20px' }}>
         <Routes>
