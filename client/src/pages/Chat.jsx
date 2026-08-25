@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import API from '../services/api';
 
-const socket = io('http://localhost:5000');
+const socket = io('https://pet-connect-backend-89fo.onrender.com');
 
 function Chat() {
   const { petId, receiverId } = useParams();
