@@ -46,3 +46,8 @@ A full-stack Pet Adoption platform built with the MERN stack.
 cd server
 npm install
 npm run dev
+
+### Frontend
+cd client
+npm install
+npm run dev
